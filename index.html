@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubCraft — Personal Projects & Productivity Hub (Wide Desktop)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          screens: {
+            '2xl': '1536px',
+            '3xl': '1760px',
+          },
+          colors: {
+            stone: {
+              25: '#FCFCFB',
+              50: '#FAFAF9',
+              100: '#F5F5F4',
+              200: '#E7E5E4',
+              300: '#D6D3D1',
+              400: '#A8A29E',
+              500: '#78716C',
+              600: '#57534E',
+              700: '#44403C',
+              800: '#292524',
+              900: '#1C1917',
+              950: '#0C0A09',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #FAFAF9;
+      color: #1C1917;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #D6D3D1;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #A8A29E;
+    }
+    .card-drag-handle {
+      cursor: grab;
+    }
+    .card-drag-handle:active {
+      cursor: grabbing;
+    }
+    .bento-card {
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .bento-card.drag-over {
+      outline: 2px dashed #44403C;
+      outline-offset: 4px;
+      transform: scale(0.99);
+    }
+    .bento-card.dragging {
+      opacity: 0.35;
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-stone-200 selection:text-stone-900 antialiased">
+
+  <!-- TOP NAVIGATION: ULTRA-WIDE STICKY HEADER -->
+  <header class="border-b border-stone-200/90 bg-white/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & Brand -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 bg-stone-900 rounded-lg flex items-center justify-center text-white font-mono text-sm font-semibold shadow-xs">
+            ⌘
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span class="font-serif italic text-2xl tracking-tight text-stone-900">HubCraft</span>
+            <span class="text-[10px] font-mono tracking-wider text-stone-400 uppercase hidden sm:inline">Desktop Wide</span>
+          </div>
+        </div>
+
+        <!-- Tab Switcher -->
+        <nav class="flex items-center space-x-1 border border-stone-200 bg-stone-100/80 p-1 rounded-xl text-xs font-medium">
+          <button id="nav-dashboard" onclick="switchTab('dashboard')" class="px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 bg-white text-stone-900 shadow-xs font-medium">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-stone-700"></i>
+            <span>Dashboard</span>
+          </button>
+          <button id="nav-registry" onclick="switchTab('registry')" class="px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 text-stone-500 hover:text-stone-900">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-stone-500"></i>
+            <span>All Projects & Scripts</span>
+            <span id="badge-total-projects" class="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-700 font-mono">0</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Quick Actions & Wide Status Summary -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden xl:flex items-center space-x-4 pr-3 text-xs text-stone-500 font-mono border-r border-stone-200">
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="active-in-use-pill">0 Tools Active</span>
+          </span>
+          <span class="text-stone-300">•</span>
+          <span id="vault-count-pill">0 JS Scripts</span>
+        </div>
+
+        <button onclick="openWidgetModal()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg border border-stone-200 transition">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Tambah Card</span>
+        </button>
+
+        <button onclick="openProjectModal()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-lg shadow-xs transition">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          <span>Project Baru</span>
+        </button>
+
+        <!-- Dropdown Backup/Restore -->
+        <div class="relative inline-block text-left">
+          <button onclick="toggleExportMenu()" class="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100 border border-stone-200 transition" title="Data Menu">
+            <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+          </button>
+          <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-52 rounded-xl shadow-lg bg-white ring-1 ring-black/5 divide-y divide-stone-100 z-50 text-xs py-1">
+            <button onclick="exportDataJSON()" class="w-full text-left px-4 py-2 hover:bg-stone-50 flex items-center space-x-2 text-stone-700">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Export Backup (JSON)</span>
+            </button>
+            <label class="w-full text-left px-4 py-2 hover:bg-stone-50 flex items-center space-x-2 text-stone-700 cursor-pointer">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              <span>Import Backup (JSON)</span>
+              <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importDataJSON(event)">
+            </label>
+            <button onclick="resetToSampleData()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center space-x-2">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Reset Data Demo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER (WIDE VIEWPORT MAX 1760PX) -->
+  <main class="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-7 flex-1 w-full">
+
+    <!-- ============================================== -->
+    <!-- VIEW 1: DASHBOARD (CUSTOMIZABLE BENTO CANVAS)  -->
+    <!-- ============================================== -->
+    <div id="view-dashboard" class="space-y-6">
+      
+      <!-- Sub-Header & Controls -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between border-b border-stone-200 pb-5 gap-4">
+        <div>
+          <h1 class="font-serif italic text-3xl sm:text-4xl text-stone-900 tracking-tight">Active Canvas &amp; Workspace</h1>
+          <p class="text-xs text-stone-500 mt-1 max-w-2xl">
+            Tarik handle <span class="font-mono text-stone-700 font-semibold px-1 py-0.5 bg-stone-100 rounded border border-stone-200">⠿</span> untuk atur letak bebas, atau ubah lebar card (<strong class="font-mono text-stone-700 font-normal">1x, 2x, 3x, 4x banner</strong>) di monitor PC wide.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Filter chips for board items -->
+          <div class="flex items-center space-x-1 bg-stone-100 p-1 rounded-lg border border-stone-200 text-xs">
+            <button onclick="filterBoardCategory('all')" data-boardcat="all" class="board-cat-btn px-2.5 py-1 rounded-md bg-white text-stone-900 font-medium shadow-2xs">Semua</button>
+            <button onclick="filterBoardCategory('project')" data-boardcat="project" class="board-cat-btn px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900">Projects</button>
+            <button onclick="filterBoardCategory('photo')" data-boardcat="photo" class="board-cat-btn px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900">Photos</button>
+            <button onclick="filterBoardCategory('quote')" data-boardcat="quote" class="board-cat-btn px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900">Quotes &amp; Notes</button>
+          </div>
+
+          <button onclick="openWidgetModal('photo')" class="px-2.5 py-1.5 text-xs border border-stone-200 rounded-lg hover:bg-stone-100 bg-white flex items-center space-x-1.5 text-stone-700 transition">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-stone-500"></i>
+            <span>+ Upload Foto</span>
+          </button>
+          <button onclick="openWidgetModal('quote')" class="px-2.5 py-1.5 text-xs border border-stone-200 rounded-lg hover:bg-stone-100 bg-white flex items-center space-x-1.5 text-stone-700 transition">
+            <i data-lucide="quote" class="w-3.5 h-3.5 text-stone-500"></i>
+            <span>+ Quote / Catatan</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- WIDE BENTO GRID: 1 col on mobile, 2 on tablet, 3 on laptop, 4 on desktop, 5 on wide monitor -->
+      <div id="board-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-5">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VIEW 2: ALL PROJECTS & SCRIPTS (WIDE REGISTRY) -->
+    <!-- ============================================== -->
+    <div id="view-registry" class="hidden space-y-7">
+      
+      <!-- Registry Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200 pb-5">
+        <div>
+          <h2 class="font-serif italic text-3xl sm:text-4xl text-stone-900">Project &amp; Script Registry</h2>
+          <p class="text-xs text-stone-500 mt-1">Lacak akun tempat menyimpan, versi yang terbukti berhasil, dan status proyek.</p>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
+            <input type="text" id="registry-search" oninput="renderRegistry()" placeholder="Cari nama, akun Claude, folder, tag..." class="pl-8 pr-3 py-1.5 text-xs bg-white border border-stone-200 rounded-lg w-56 sm:w-72 focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+
+          <select id="registry-category-filter" onchange="renderRegistry()" class="px-3 py-1.5 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none text-stone-700">
+            <option value="ALL">Semua Kategori</option>
+            <option value="work">Work / Admin Automation</option>
+            <option value="daily">Daily Life &amp; Focus</option>
+            <option value="dev">Dev Tools &amp; Scripts</option>
+          </select>
+
+          <select id="registry-status-filter" onchange="renderRegistry()" class="px-3 py-1.5 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none text-stone-700">
+            <option value="ALL">Semua Status</option>
+            <option value="in_use">Active in Use</option>
+            <option value="ready">Ready / Stable</option>
+            <option value="draft">Draft / Improvement</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ULTRA WIDE DATA TABLE -->
+      <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
+        <div class="overflow-x-auto custom-scroll">
+          <table class="w-full text-left text-xs min-w-[950px]">
+            <thead class="bg-stone-50/80 border-b border-stone-200 text-stone-500 font-medium">
+              <tr>
+                <th class="py-3.5 px-4 w-72">Project / Website</th>
+                <th class="py-3.5 px-4 w-40">Kategori</th>
+                <th class="py-3.5 px-4 w-60">Versi Workout (Stabil)</th>
+                <th class="py-3.5 px-4">Lokasi Akun / Folder</th>
+                <th class="py-3.5 px-4 w-36">Status</th>
+                <th class="py-3.5 px-4 text-right w-36">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="registry-table-body" class="divide-y divide-stone-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN SCRIPT VAULT (WIDE MULTI-COLUMN) -->
+      <div class="border border-stone-200 rounded-2xl bg-white p-6 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-stone-100 pb-3 gap-2">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-lg bg-stone-900 text-amber-400 flex items-center justify-center font-mono text-xs font-bold">JS</div>
+            <div>
+              <h3 class="font-medium text-sm text-stone-900">Admin Script Vault (Browser Console Snippets)</h3>
+              <p class="text-[11px] text-stone-400">Kumpulan kode otomatisasi cepat. Klik untuk salin dan jalankan di DevTools Console.</p>
+            </div>
+          </div>
+          <span class="text-xs font-mono text-stone-500 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-md self-start sm:self-auto">
+            1-Click Clipboard
+          </span>
+        </div>
+
+        <div id="script-vault-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD / EDIT PROJECT                      -->
+  <!-- ============================================== -->
+  <div id="modal-project" class="hidden fixed inset-0 bg-stone-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-stone-200 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/60">
+        <div>
+          <h3 id="modal-project-title" class="font-serif italic text-2xl text-stone-900">Project Details</h3>
+          <p class="text-[11px] text-stone-400">Catat versi yang workout, akun penyimpanan, dan script otomatisasi.</p>
+        </div>
+        <button onclick="closeProjectModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Form) -->
+      <div class="p-6 overflow-y-auto custom-scroll space-y-4 text-xs">
+        <input type="hidden" id="form-project-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="font-medium text-stone-700">Nama Project / Tools *</label>
+            <input type="text" id="form-name" placeholder="Misal: Student Attendance Auto-Filler" class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Kategori *</label>
+            <select id="form-category" class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none bg-white">
+              <option value="work">Work / Admin Automation</option>
+              <option value="daily">Daily Life &amp; Focus</option>
+              <option value="dev">Dev Tools &amp; Scripts</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-medium text-stone-700">Deskripsi Singkat</label>
+          <input type="text" id="form-description" placeholder="Fungsi utama tools ini..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+        </div>
+
+        <!-- Working Version & Storage Location -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-stone-50 p-3.5 rounded-xl border border-stone-200/90">
+          <div class="space-y-1">
+            <label class="font-medium text-stone-800 flex items-center space-x-1">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Versi Workout (Stabil) *</span>
+            </label>
+            <input type="text" id="form-working-version" placeholder="Contoh: v2.3 - Fixed DOM parse" class="w-full px-3 py-1.5 border border-stone-200 rounded-lg bg-white focus:outline-none font-mono text-[11px]">
+            <span class="text-[10px] text-stone-400">Versi spesifik yang kamu tahu pasti bekerja.</span>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-medium text-stone-800 flex items-center space-x-1">
+              <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Lokasi / Akun Claude *</span>
+            </label>
+            <input type="text" id="form-location" placeholder="Misal: Claude Acc B / Folder: ~/tools/attendance" class="w-full px-3 py-1.5 border border-stone-200 rounded-lg bg-white focus:outline-none text-[11px]">
+            <span class="text-[10px] text-stone-400">Catat akun Claude A/B, Google Drive, atau folder PC.</span>
+          </div>
+        </div>
+
+        <!-- Links & Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">URL / Link Project</label>
+            <input type="url" id="form-link" placeholder="https://..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Status</label>
+            <select id="form-status" class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none bg-white">
+              <option value="in_use">Active in Use (Tampil di Board)</option>
+              <option value="ready">Ready / Stable</option>
+              <option value="draft">Under Improvement / Draft</option>
+              <option value="archived">Archived / Selesai</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cover Image: PC Upload or URL -->
+        <div class="space-y-2 border-t border-stone-100 pt-3">
+          <label class="font-medium text-stone-700 flex items-center justify-between">
+            <span>Gambar Cover Project (Optional)</span>
+            <span class="text-[10px] text-stone-400">Upload dari komputer atau paste link</span>
+          </label>
+          
+          <div class="flex gap-2">
+            <button type="button" onclick="setCoverMode('upload')" id="btn-cover-mode-upload" class="px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium">Upload dari Komputer</button>
+            <button type="button" onclick="setCoverMode('url')" id="btn-cover-mode-url" class="px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600">Gunakan Link URL</button>
+          </div>
+
+          <!-- Upload Dropzone -->
+          <div id="section-cover-upload" class="border-2 border-dashed border-stone-200 hover:border-stone-400 rounded-xl p-3.5 text-center transition bg-stone-50/50">
+            <input type="file" id="project-file-input" accept="image/*" class="hidden" onchange="handleProjectImageUpload(event)">
+            <label for="project-file-input" class="cursor-pointer block">
+              <i data-lucide="upload-cloud" class="w-6 h-6 mx-auto text-stone-400 mb-1"></i>
+              <p class="font-medium text-stone-700 text-xs">Pilih file gambar dari komputermu</p>
+              <p class="text-[10px] text-stone-400">JPG, PNG, WebP (Otomatis dikompresi agar hemat memori)</p>
+            </label>
+          </div>
+
+          <!-- URL Input -->
+          <div id="section-cover-url" class="hidden">
+            <input type="url" id="form-cover-url" oninput="previewProjectCover(this.value)" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+
+          <!-- Preview Cover -->
+          <div id="project-cover-preview-box" class="hidden relative rounded-lg overflow-hidden border border-stone-200 h-28 bg-stone-100 mt-2">
+            <img id="project-cover-preview-img" src="" alt="Cover Preview" class="w-full h-full object-cover">
+            <button type="button" onclick="clearProjectCover()" class="absolute top-2 right-2 bg-stone-900/75 hover:bg-stone-900 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur">✕ Hapus</button>
+          </div>
+          <input type="hidden" id="form-cover-data">
+        </div>
+
+        <!-- JavaScript Console Snippet -->
+        <div class="space-y-1 border-t border-stone-100 pt-3">
+          <label class="font-medium text-stone-700 flex items-center justify-between">
+            <span class="flex items-center space-x-1">
+              <i data-lucide="code-2" class="w-3.5 h-3.5 text-stone-500"></i>
+              <span>JavaScript Console Snippet (Admin Automation)</span>
+            </span>
+            <span class="text-[10px] text-stone-400 font-mono">Optional</span>
+          </label>
+          <textarea id="form-script" rows="3" placeholder="// Paste script JS untuk konsol browser..." class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono text-[11px] bg-stone-950 text-emerald-400 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Improvement Ideas -->
+        <div class="space-y-1">
+          <label class="font-medium text-stone-700">Ide Perbaikan / Backlog</label>
+          <textarea id="form-improvement-ideas" rows="2" placeholder="Catat rencana update fitur berikutnya..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none"></textarea>
+        </div>
+
+        <!-- Initial Column Span for Wide Board -->
+        <div class="space-y-1 border-t border-stone-100 pt-3">
+          <label class="font-medium text-stone-700">Lebar Card di Dashboard</label>
+          <select id="form-project-span" class="w-full px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none bg-white">
+            <option value="1">1x — Standar (1 Kolom)</option>
+            <option value="2">2x — Wide Card (2 Kolom)</option>
+            <option value="3">3x — Extra Wide (3 Kolom)</option>
+            <option value="4">4x — Panoramic Banner (4 Kolom)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 border-t border-stone-100 bg-stone-50 flex items-center justify-between">
+        <button type="button" id="btn-delete-project" onclick="deleteCurrentProject()" class="text-red-500 hover:text-red-700 font-medium text-xs hidden">
+          Hapus Project
+        </button>
+        <div class="flex items-center space-x-2 ml-auto">
+          <button type="button" onclick="closeProjectModal()" class="px-3.5 py-1.5 border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-100">Batal</button>
+          <button type="button" onclick="saveProjectForm()" class="px-4 py-1.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 font-medium shadow-2xs">Simpan Project</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD / EDIT BOARD WIDGET (FOTO / QUOTE)  -->
+  <!-- ============================================== -->
+  <div id="modal-widget" class="hidden fixed inset-0 bg-stone-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-stone-200 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+      
+      <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/60">
+        <div>
+          <h3 id="modal-widget-title" class="font-serif italic text-2xl text-stone-900">Tambah Card Board</h3>
+          <p class="text-[11px] text-stone-400">Kustomisasi canvas Notion-mu dengan foto estetik atau catatan quote.</p>
+        </div>
+        <button onclick="closeWidgetModal()" class="text-stone-400 hover:text-stone-700 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-widget-id">
+
+        <!-- Type selector -->
+        <div class="space-y-1">
+          <label class="font-medium text-stone-700">Tipe Widget</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setWidgetType('photo')" id="btn-type-photo" class="p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-800 bg-stone-50 font-medium text-stone-900">
+              <i data-lucide="image" class="w-4 h-4"></i>
+              <span>Foto / Moodboard</span>
+            </button>
+            <button type="button" onclick="setWidgetType('quote')" id="btn-type-quote" class="p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-200 hover:bg-stone-50 font-medium text-stone-600">
+              <i data-lucide="quote" class="w-4 h-4"></i>
+              <span>Quote / Catatan</span>
+            </button>
+          </div>
+          <input type="hidden" id="form-widget-type" value="photo">
+        </div>
+
+        <!-- PHOTO FIELDS -->
+        <div id="widget-photo-fields" class="space-y-3">
+          <div class="flex gap-2">
+            <button type="button" onclick="setWidgetImageMode('upload')" id="btn-widget-img-upload" class="px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium">Upload dari Komputer</button>
+            <button type="button" onclick="setWidgetImageMode('url')" id="btn-widget-img-url" class="px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600">Gunakan Link URL</button>
+          </div>
+
+          <!-- Local Upload Dropzone -->
+          <div id="widget-upload-box" class="border-2 border-dashed border-stone-200 hover:border-stone-400 rounded-xl p-4 text-center cursor-pointer bg-stone-50/50 transition">
+            <input type="file" id="widget-file-input" accept="image/*" class="hidden" onchange="handleWidgetImageUpload(event)">
+            <label for="widget-file-input" class="cursor-pointer block">
+              <i data-lucide="upload-cloud" class="w-6 h-6 mx-auto text-stone-400 mb-1"></i>
+              <p class="font-medium text-stone-700 text-xs">Pilih file gambar dari komputermu</p>
+              <p class="text-[10px] text-stone-400">JPG, PNG, WebP (Dikompresi otomatis)</p>
+            </label>
+          </div>
+
+          <!-- URL Input -->
+          <div id="widget-url-box" class="hidden space-y-1">
+            <label class="font-medium text-stone-700">Image URL</label>
+            <input type="url" id="form-widget-img-url" oninput="previewWidgetImage(this.value)" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+
+          <!-- Preview -->
+          <div id="widget-preview-container" class="hidden relative rounded-xl overflow-hidden border border-stone-200 h-36 bg-stone-100">
+            <img id="widget-preview-img" src="" alt="Preview" class="w-full h-full object-cover">
+            <button type="button" onclick="clearWidgetImage()" class="absolute top-2 right-2 bg-stone-900/75 hover:bg-stone-900 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur">✕ Hapus</button>
+          </div>
+          <input type="hidden" id="form-widget-img-data">
+
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Caption / Judul Foto (Optional)</label>
+            <input type="text" id="form-widget-caption" placeholder="Deskripsi foto..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Link Saat Foto Diklik (Optional)</label>
+            <input type="url" id="form-widget-click-url" placeholder="https://... (jika ingin foto jadi hyperlink)" class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+        </div>
+
+        <!-- QUOTE / NOTE FIELDS -->
+        <div id="widget-quote-fields" class="hidden space-y-3">
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Quote / Catatan</label>
+            <textarea id="form-widget-text" rows="3" placeholder="Tuliskan daily mantra, instruksi Claude, atau catatan penting..." class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none font-serif text-sm"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-stone-700">Author / Subtitle</label>
+            <input type="text" id="form-widget-author" placeholder="Misal: Steve Jobs / Claude Prompt Rule" class="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Column Span Setting for Wide Monitor -->
+        <div class="space-y-1 border-t border-stone-100 pt-3">
+          <label class="font-medium text-stone-700">Lebar Card di Desktop Bento Grid</label>
+          <select id="form-widget-col" class="w-full px-3 py-1.5 border border-stone-200 rounded-lg focus:outline-none bg-white">
+            <option value="1">1x — Standar (1 Kolom)</option>
+            <option value="2">2x — Wide Bento (2 Kolom)</option>
+            <option value="3">3x — Extra Wide (3 Kolom)</option>
+            <option value="4">4x — Full Width Banner (4 Kolom)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-stone-100 bg-stone-50 flex items-center justify-between">
+        <button type="button" id="btn-delete-widget" onclick="deleteCurrentWidget()" class="text-red-500 hover:text-red-700 font-medium text-xs hidden">
+          Hapus Widget
+        </button>
+        <div class="flex items-center space-x-2 ml-auto">
+          <button type="button" onclick="closeWidgetModal()" class="px-3.5 py-1.5 border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-100">Batal</button>
+          <button type="button" onclick="saveWidgetForm()" class="px-4 py-1.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 font-medium shadow-2xs">Simpan Widget</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-stone-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center space-x-2 transform translate-y-16 opacity-0 transition-all duration-300 z-50">
+    <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-message">Notifikasi</span>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    const INITIAL_PROJECTS = [
+      {
+        id: "proj-1",
+        name: "Student Data Verifier",
+        category: "work",
+        description: "Validasi kelengkapan dokumen siswa secara otomatis dan render ringkasan.",
+        workingVersion: "v2.1 - DOM Fix Multi-rows",
+        location: "Claude Acc Work / Folder: ~/admin-tools/verifier",
+        link: "https://example.com/verifier",
+        status: "in_use",
+        coverImage: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
+        script: "document.querySelectorAll('table tr').forEach(r => { if(!r.innerText.includes('Lengkap')) r.style.background='#fee2e2'; });",
+        improvementIdeas: "Tambahkan ekspor langsung ke format CSV / Excel.",
+        colSpan: 2
+      },
+      {
+        id: "proj-2",
+        name: "Daily Vocab & Context Marker",
+        category: "daily",
+        description: "Koleksi vocabulary dan anotasi artikel jurnal dengan sistem flashcard.",
+        workingVersion: "v1.4 - IndexedDB Sync",
+        location: "Claude Personal / Chrome Extension Folder",
+        link: "https://example.com/vocab",
+        status: "in_use",
+        coverImage: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80",
+        script: "",
+        improvementIdeas: "Integrasi sistem spaced repetition otomatis.",
+        colSpan: 1
+      },
+      {
+        id: "proj-3",
+        name: "Admin Timesheet Auto-Fill",
+        category: "work",
+        description: "Console script untuk menginput presensi dan jam tugas tanpa klik satu-satu.",
+        workingVersion: "v3.0 - Delay Async Fix",
+        location: "Folder: ~/desktop/snippets/timesheet.js",
+        link: "",
+        status: "in_use",
+        coverImage: "",
+        script: "(function fill() { const inputs = document.querySelectorAll('input.shift'); inputs.forEach(i => { i.value = '09:00'; i.dispatchEvent(new Event('change')); }); console.log('Timesheet synced.'); })();",
+        improvementIdeas: "Buat shortcut bookmarklet agar tidak perlu buka devtools manual.",
+        colSpan: 1
+      },
+      {
+        id: "proj-4",
+        name: "HTML Table to JSON Converter",
+        category: "dev",
+        description: "Scraper ringan untuk mengubah tabel web apa pun menjadi array of objects JSON.",
+        workingVersion: "v1.2 - Clean Keys",
+        location: "Local: ~/dev/tools/table-parser.js",
+        link: "",
+        status: "in_use",
+        coverImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
+        script: "const parse = () => { const rows = [...document.querySelectorAll('table tr')]; const head = [...rows[0].children].map(c => c.innerText.trim()); return rows.slice(1).map(r => Object.fromEntries([...r.children].map((c, i) => [head[i], c.innerText.trim()]))); }; console.table(parse());",
+        improvementIdeas: "Dukung nested row spans.",
+        colSpan: 2
+      }
+    ];
+
+    const INITIAL_WIDGETS = [
+      {
+        id: "widget-1",
+        type: "photo",
+        imageUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=900&q=80",
+        caption: "Minimal Desktop Setup • Clarity & Speed",
+        clickUrl: "",
+        colSpan: 1
+      },
+      {
+        id: "widget-2",
+        type: "quote",
+        text: "“Simplicity is prerequisite for reliability. Build small tools that solve exact daily friction points.”",
+        author: "Edsger W. Dijkstra • Engineering Rule",
+        colSpan: 2
+      }
+    ];
+
+    let projects = [];
+    let widgets = [];
+    let boardItemsOrder = [];
+    let draggedItem = null;
+    let activeBoardCat = 'all';
+
+    const KEY_PROJECTS = "hubcraft_projects_wide_v1";
+    const KEY_WIDGETS = "hubcraft_widgets_wide_v1";
+    const KEY_BOARD_ORDER = "hubcraft_board_order_wide_v1";
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadStorageData();
+      renderAll();
+      lucide.createIcons();
+    });
+
+    function loadStorageData() {
+      try {
+        const storedProj = localStorage.getItem(KEY_PROJECTS);
+        const storedWidg = localStorage.getItem(KEY_WIDGETS);
+        const storedOrder = localStorage.getItem(KEY_BOARD_ORDER);
+
+        projects = storedProj ? JSON.parse(storedProj) : INITIAL_PROJECTS;
+        widgets = storedWidg ? JSON.parse(storedWidg) : INITIAL_WIDGETS;
+
+        if (storedOrder) {
+          boardItemsOrder = JSON.parse(storedOrder);
+        } else {
+          syncBoardOrder();
+        }
+      } catch (e) {
+        console.error(e);
+        projects = INITIAL_PROJECTS;
+        widgets = INITIAL_WIDGETS;
+        syncBoardOrder();
+      }
+    }
+
+    function saveStorageData() {
+      try {
+        localStorage.setItem(KEY_PROJECTS, JSON.stringify(projects));
+        localStorage.setItem(KEY_WIDGETS, JSON.stringify(widgets));
+        localStorage.setItem(KEY_BOARD_ORDER, JSON.stringify(boardItemsOrder));
+      } catch (e) {
+        console.warn('Storage quota warning', e);
+      }
+    }
+
+    function syncBoardOrder() {
+      const activeProj = projects.filter(p => p.status === 'in_use').map(p => ({ id: p.id, type: 'project' }));
+      const widgItems = widgets.map(w => ({ id: w.id, type: 'widget' }));
+      const combined = [...activeProj, ...widgItems];
+
+      boardItemsOrder = boardItemsOrder.filter(item => {
+        if (item.type === 'project') return activeProj.some(p => p.id === item.id);
+        if (item.type === 'widget') return widgItems.some(w => w.id === item.id);
+        return false;
+      });
+
+      combined.forEach(item => {
+        if (!boardItemsOrder.some(x => x.id === item.id)) {
+          boardItemsOrder.push(item);
+        }
+      });
+      saveStorageData();
+    }
+
+    function renderAll() {
+      syncBoardOrder();
+      renderBoard();
+      renderRegistry();
+      renderScriptVault();
+      updatePills();
+      lucide.createIcons();
+    }
+
+    function updatePills() {
+      const totalCount = document.getElementById("badge-total-projects");
+      if (totalCount) totalCount.innerText = projects.length;
+
+      const inUseCount = projects.filter(p => p.status === 'in_use').length;
+      const pillActive = document.getElementById("active-in-use-pill");
+      if (pillActive) pillActive.innerText = `${inUseCount} Tools In Use`;
+
+      const scriptCount = projects.filter(p => p.script && p.script.trim() !== "").length;
+      const pillVault = document.getElementById("vault-count-pill");
+      if (pillVault) pillVault.innerText = `${scriptCount} JS Scripts`;
+    }
+
+    function switchTab(tab) {
+      const viewDash = document.getElementById("view-dashboard");
+      const viewReg = document.getElementById("view-registry");
+      const navDash = document.getElementById("nav-dashboard");
+      const navReg = document.getElementById("nav-registry");
+
+      if (tab === 'dashboard') {
+        viewDash.classList.remove('hidden');
+        viewReg.classList.add('hidden');
+        navDash.className = "px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 bg-white text-stone-900 shadow-xs font-medium";
+        navReg.className = "px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 text-stone-500 hover:text-stone-900";
+        renderBoard();
+      } else {
+        viewDash.classList.add('hidden');
+        viewReg.classList.remove('hidden');
+        navReg.className = "px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 bg-white text-stone-900 shadow-xs font-medium";
+        navDash.className = "px-4 py-1.5 rounded-lg transition-all flex items-center space-x-2 text-stone-500 hover:text-stone-900";
+        renderRegistry();
+      }
+      lucide.createIcons();
+    }
+
+    // ----------------------------------------------------
+    // BOARD LOGIC: BENTO GRID WITH 1x to 4x SPANS
+    // ----------------------------------------------------
+    function filterBoardCategory(cat) {
+      activeBoardCat = cat;
+      document.querySelectorAll('.board-cat-btn').forEach(btn => {
+        if (btn.getAttribute('data-boardcat') === cat) {
+          btn.className = "board-cat-btn px-2.5 py-1 rounded-md bg-white text-stone-900 font-medium shadow-2xs";
+        } else {
+          btn.className = "board-cat-btn px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900";
+        }
+      });
+      renderBoard();
+      lucide.createIcons();
+    }
+
+    function getSpanClasses(span) {
+      const s = parseInt(span) || 1;
+      if (s === 4) return 'col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4 2xl:col-span-4';
+      if (s === 3) return 'col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-3 2xl:col-span-3';
+      if (s === 2) return 'col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2';
+      return 'col-span-1';
+    }
+
+    function createCardToolbar(id, type, currentSpan, index) {
+      const span = parseInt(currentSpan) || 1;
+      return `
+        <div class="flex items-center justify-between border-b border-stone-100 px-3 py-1.5 bg-stone-50/80 text-[10px] text-stone-400 select-none">
+          <div class="flex items-center space-x-1.5">
+            <span class="card-drag-handle p-1 hover:text-stone-800 rounded transition cursor-grab" title="Drag untuk tukar posisi">
+              <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
+            </span>
+            <span class="font-mono text-stone-400 text-[10px]">#${index + 1}</span>
+          </div>
+          
+          <div class="flex items-center space-x-1">
+            <button onclick="shiftCard(${index}, -1)" title="Geser Kiri" class="p-1 hover:text-stone-800 rounded hover:bg-stone-200/50 transition">◀</button>
+            <button onclick="shiftCard(${index}, 1)" title="Geser Kanan" class="p-1 hover:text-stone-800 rounded hover:bg-stone-200/50 transition">▶</button>
+            <div class="h-3 w-[1px] bg-stone-200 mx-1"></div>
+            <!-- Size Toggle: 1x, 2x, 3x, 4x -->
+            <button onclick="setCardSpan('${id}', '${type}', 1)" title="1 Kolom Standar" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${span === 1 ? 'bg-stone-900 text-white font-medium' : 'hover:bg-stone-200 text-stone-600'}">1x</button>
+            <button onclick="setCardSpan('${id}', '${type}', 2)" title="2 Kolom Wide" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${span === 2 ? 'bg-stone-900 text-white font-medium' : 'hover:bg-stone-200 text-stone-600'}">2x</button>
+            <button onclick="setCardSpan('${id}', '${type}', 3)" title="3 Kolom Extra Wide" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${span === 3 ? 'bg-stone-900 text-white font-medium' : 'hover:bg-stone-200 text-stone-600'}">3x</button>
+            <button onclick="setCardSpan('${id}', '${type}', 4)" title="4 Kolom Full Banner" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${span === 4 ? 'bg-stone-900 text-white font-medium' : 'hover:bg-stone-200 text-stone-600'}">4x</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBoard() {
+      const container = document.getElementById("board-grid");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const filteredOrder = boardItemsOrder.filter(item => {
+        if (activeBoardCat === 'all') return true;
+        if (activeBoardCat === 'project') return item.type === 'project';
+        if (activeBoardCat === 'photo') {
+          if (item.type !== 'widget') return false;
+          const w = widgets.find(x => x.id === item.id);
+          return w && w.type === 'photo';
+        }
+        if (activeBoardCat === 'quote') {
+          if (item.type !== 'widget') return false;
+          const w = widgets.find(x => x.id === item.id);
+          return w && w.type === 'quote';
+        }
+        return true;
+      });
+
+      if (filteredOrder.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-stone-200 rounded-2xl bg-white/60">
+            <i data-lucide="layout" class="w-8 h-8 mx-auto text-stone-300 mb-2"></i>
+            <p class="font-serif italic text-2xl text-stone-700">Canvas masih kosong</p>
+            <p class="text-xs text-stone-400 mt-1 max-w-sm mx-auto">Tambahkan foto estetik, catatan quote, atau buat project dengan status "Active in Use".</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredOrder.forEach((item, index) => {
+        let el = null;
+        if (item.type === 'project') {
+          const proj = projects.find(p => p.id === item.id);
+          if (proj) el = createProjectCard(proj, index);
+        } else if (item.type === 'widget') {
+          const widg = widgets.find(w => w.id === item.id);
+          if (widg) el = createWidgetCard(widg, index);
+        }
+        if (el) container.appendChild(el);
+      });
+    }
+
+    function createProjectCard(proj, index) {
+      const card = document.createElement("div");
+      const spanClass = getSpanClasses(proj.colSpan);
+      
+      card.className = `bento-card bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${spanClass}`;
+      card.setAttribute("draggable", "true");
+      card.dataset.id = proj.id;
+      card.dataset.type = "project";
+      card.dataset.index = index;
+
+      attachDragEvents(card);
+
+      const span = parseInt(proj.colSpan) || 1;
+      const coverHeight = span >= 3 ? 'h-48' : (span === 2 ? 'h-36' : 'h-32');
+
+      const coverHtml = proj.coverImage ? `
+        <div class="${coverHeight} w-full overflow-hidden bg-stone-100 relative group">
+          <img src="${escapeHtml(proj.coverImage)}" alt="${escapeHtml(proj.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102">
+          <div class="absolute inset-0 bg-black/10"></div>
+          ${proj.link ? `
+            <a href="${escapeHtml(proj.link)}" target="_blank" rel="noopener noreferrer" class="absolute bottom-2.5 right-2.5 bg-white/95 hover:bg-white text-stone-900 px-2.5 py-1 rounded-lg text-xs font-medium shadow-xs backdrop-blur flex items-center space-x-1">
+              <span>Buka Website</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+            </a>
+          ` : ''}
+        </div>
+      ` : '';
+
+      const catLabels = {
+        work: 'Work / Admin',
+        daily: 'Daily Life',
+        dev: 'Dev Tool'
+      };
+
+      card.innerHTML = `
+        <div>
+          ${createCardToolbar(proj.id, 'project', proj.colSpan, index)}
+          ${coverHtml}
+          
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="inline-block text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-stone-100 text-stone-600 font-medium tracking-wider">
+                  ${catLabels[proj.category] || proj.category}
+                </span>
+                <h3 class="font-serif italic ${span >= 2 ? 'text-2xl' : 'text-xl'} text-stone-900 mt-1 leading-snug">${escapeHtml(proj.name)}</h3>
+              </div>
+              <button onclick="editProject('${proj.id}')" class="p-1 text-stone-400 hover:text-stone-800 rounded transition" title="Edit">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+            <p class="text-xs text-stone-500 line-clamp-2 leading-relaxed">${escapeHtml(proj.description || 'Tidak ada deskripsi.')}</p>
+
+            <!-- Working Version & Storage Location -->
+            <div class="space-y-1.5 pt-1 text-[11px]">
+              <div class="flex items-center space-x-1.5 text-stone-800 bg-stone-50 p-2 rounded-lg border border-stone-200/70">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                <span class="truncate"><strong class="font-medium">Workout:</strong> <span class="font-mono text-emerald-800">${escapeHtml(proj.workingVersion || 'Belum dicatat')}</span></span>
+              </div>
+              <div class="flex items-center space-x-1.5 text-stone-500 px-1 truncate font-mono text-[10px]">
+                <i data-lucide="hard-drive" class="w-3 h-3 text-stone-400 shrink-0"></i>
+                <span class="truncate" title="${escapeHtml(proj.location)}">${escapeHtml(proj.location || 'Lokasi belum dicatat')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Card -->
+        <div class="p-3 border-t border-stone-100 bg-stone-50/60 flex items-center justify-between text-xs">
+          ${proj.script ? `
+            <button onclick="copySnippet('${proj.id}')" class="inline-flex items-center space-x-1 text-[11px] font-mono font-medium text-stone-700 hover:text-stone-900 bg-white border border-stone-200 px-2 py-1 rounded shadow-2xs hover:bg-stone-50 transition">
+              <i data-lucide="code" class="w-3 h-3 text-amber-600"></i>
+              <span>Copy JS</span>
+            </button>
+          ` : '<span></span>'}
+
+          ${proj.link ? `
+            <a href="${escapeHtml(proj.link)}" target="_blank" rel="noopener noreferrer" class="text-stone-700 hover:text-stone-900 font-medium inline-flex items-center space-x-1">
+              <span>Launch</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          ` : `
+            <span class="text-[10px] text-stone-400 font-mono">Offline / Local script</span>
+          `}
+        </div>
+      `;
+
+      return card;
+    }
+
+    function createWidgetCard(widg, index) {
+      const card = document.createElement("div");
+      const spanClass = getSpanClasses(widg.colSpan);
+      const span = parseInt(widg.colSpan) || 1;
+      
+      card.className = `bento-card bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between ${spanClass}`;
+      card.setAttribute("draggable", "true");
+      card.dataset.id = widg.id;
+      card.dataset.type = "widget";
+      card.dataset.index = index;
+
+      attachDragEvents(card);
+
+      let contentHtml = '';
+
+      if (widg.type === 'photo') {
+        const photoHeight = span >= 3 ? 'h-72' : (span === 2 ? 'h-56' : 'h-48');
+        const clickWrapStart = widg.clickUrl ? `<a href="${escapeHtml(widg.clickUrl)}" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden">` : `<div class="relative overflow-hidden group">`;
+        const clickWrapEnd = widg.clickUrl ? `</a>` : `</div>`;
+
+        contentHtml = `
+          ${createCardToolbar(widg.id, 'widget', widg.colSpan, index)}
+          ${clickWrapStart}
+            <div class="${photoHeight} w-full bg-stone-100">
+              <img src="${escapeHtml(widg.imageUrl)}" alt="${escapeHtml(widg.caption || 'Board visual')}" class="w-full h-full object-cover transition duration-500 group-hover:scale-102">
+            </div>
+            ${widg.clickUrl ? `
+              <div class="absolute top-2 right-2 bg-stone-900/60 backdrop-blur text-white p-1 rounded-md text-[10px]">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </div>
+            ` : ''}
+          ${clickWrapEnd}
+          <div class="p-3 bg-white flex items-center justify-between text-xs">
+            <span class="font-serif italic text-stone-700 text-sm truncate">${escapeHtml(widg.caption || 'Aesthetic Canvas')}</span>
+            <button onclick="editWidget('${widg.id}')" class="text-stone-400 hover:text-stone-800 p-1">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        // Quote / Note
+        contentHtml = `
+          ${createCardToolbar(widg.id, 'widget', widg.colSpan, index)}
+          <div class="p-6 flex flex-col justify-between flex-1 space-y-4 bg-gradient-to-b from-white to-stone-50/70">
+            <div class="space-y-3">
+              <i data-lucide="quote" class="w-5 h-5 text-stone-300"></i>
+              <p class="font-serif italic ${span >= 2 ? 'text-2xl' : 'text-lg'} text-stone-800 leading-snug">
+                “${escapeHtml(widg.text)}”
+              </p>
+            </div>
+            <div class="flex items-center justify-between border-t border-stone-100 pt-3 text-[11px] text-stone-400">
+              <span class="font-mono uppercase tracking-wider text-stone-500">${escapeHtml(widg.author || 'Notes')}</span>
+              <button onclick="editWidget('${widg.id}')" class="text-stone-400 hover:text-stone-800 p-1">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      card.innerHTML = contentHtml;
+      return card;
+    }
+
+    // ----------------------------------------------------
+    // DRAG AND DROP & SPAN HANDLERS
+    // ----------------------------------------------------
+    function attachDragEvents(el) {
+      el.addEventListener("dragstart", (e) => {
+        draggedItem = {
+          index: parseInt(el.dataset.index),
+          id: el.dataset.id,
+          type: el.dataset.type
+        };
+        e.dataTransfer.effectAllowed = "move";
+        el.classList.add("dragging");
+      });
+
+      el.addEventListener("dragend", () => {
+        el.classList.remove("dragging");
+        document.querySelectorAll(".drag-over").forEach(x => x.classList.remove("drag-over"));
+        draggedItem = null;
+      });
+
+      el.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        el.classList.add("drag-over");
+      });
+
+      el.addEventListener("dragleave", () => {
+        el.classList.remove("drag-over");
+      });
+
+      el.addEventListener("drop", (e) => {
+        e.preventDefault();
+        el.classList.remove("drag-over");
+        const targetIndex = parseInt(el.dataset.index);
+        if (draggedItem && draggedItem.index !== targetIndex) {
+          const itemToMove = boardItemsOrder.splice(draggedItem.index, 1)[0];
+          boardItemsOrder.splice(targetIndex, 0, itemToMove);
+          saveStorageData();
+          renderBoard();
+          lucide.createIcons();
+          showToast("Posisi kartu berhasil diatur!");
+        }
+      });
+    }
+
+    function shiftCard(fromIndex, direction) {
+      const targetIndex = fromIndex + direction;
+      if (targetIndex < 0 || targetIndex >= boardItemsOrder.length) return;
+      const item = boardItemsOrder.splice(fromIndex, 1)[0];
+      boardItemsOrder.splice(targetIndex, 0, item);
+      saveStorageData();
+      renderBoard();
+      lucide.createIcons();
+    }
+
+    function setCardSpan(id, type, spanNumber) {
+      if (type === 'project') {
+        const p = projects.find(x => x.id === id);
+        if (p) p.colSpan = spanNumber;
+      } else if (type === 'widget') {
+        const w = widgets.find(x => x.id === id);
+        if (w) w.colSpan = spanNumber;
+      }
+      saveStorageData();
+      renderBoard();
+      lucide.createIcons();
+      showToast(`Ukuran diubah ke ${spanNumber}x`);
+    }
+
+    // ----------------------------------------------------
+    // ULTRA-WIDE REGISTRY & VAULT RENDERING
+    // ----------------------------------------------------
+    function renderRegistry() {
+      const tbody = document.getElementById("registry-table-body");
+      if (!tbody) return;
+
+      const searchVal = (document.getElementById("registry-search")?.value || "").toLowerCase().trim();
+      const catVal = document.getElementById("registry-category-filter")?.value || "ALL";
+      const statusVal = document.getElementById("registry-status-filter")?.value || "ALL";
+
+      const filtered = projects.filter(p => {
+        const matchSearch = p.name.toLowerCase().includes(searchVal) ||
+                            (p.location || "").toLowerCase().includes(searchVal) ||
+                            (p.workingVersion || "").toLowerCase().includes(searchVal) ||
+                            (p.description || "").toLowerCase().includes(searchVal);
+        const matchCat = catVal === "ALL" || p.category === catVal;
+        const matchStatus = statusVal === "ALL" || p.status === statusVal;
+        return matchSearch && matchCat && matchStatus;
+      });
+
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-10 text-center text-stone-400">Tidak ada project yang cocok dengan pencarian / filter.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-stone-50/80 transition-colors";
+
+        const statusBadges = {
+          in_use: '<span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[10px] font-medium">In Use</span>',
+          ready: '<span class="px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px] font-medium">Ready</span>',
+          draft: '<span class="px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-medium">Draft</span>',
+          archived: '<span class="px-2.5 py-0.5 bg-stone-100 text-stone-500 rounded text-[10px] font-medium">Archived</span>'
+        };
+
+        const catNames = {
+          work: 'Work / Admin',
+          daily: 'Daily Life',
+          dev: 'Dev Tool'
+        };
+
+        tr.innerHTML = `
+          <td class="py-3.5 px-4">
+            <div class="font-medium text-stone-900 text-xs">${escapeHtml(p.name)}</div>
+            <div class="text-[11px] text-stone-400 line-clamp-1 mt-0.5">${escapeHtml(p.description || '-')}</div>
+          </td>
+          <td class="py-3.5 px-4 text-stone-600 font-mono text-[11px]">
+            ${catNames[p.category] || p.category}
+          </td>
+          <td class="py-3.5 px-4">
+            <div class="inline-flex items-center space-x-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono text-[11px]">
+              <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>
+              <span>${escapeHtml(p.workingVersion || '-')}</span>
+            </div>
+          </td>
+          <td class="py-3.5 px-4 font-mono text-stone-600 text-[11px]">
+            <span class="bg-stone-100 px-2 py-0.5 rounded border border-stone-200">${escapeHtml(p.location || '-')}</span>
+          </td>
+          <td class="py-3.5 px-4">
+            ${statusBadges[p.status] || p.status}
+          </td>
+          <td class="py-3.5 px-4 text-right space-x-1">
+            ${p.script ? `
+              <button onclick="copySnippet('${p.id}')" title="Copy JS Console Script" class="p-1 text-stone-500 hover:text-stone-900 rounded">
+                <i data-lucide="code" class="w-3.5 h-3.5"></i>
+              </button>
+            ` : ''}
+            ${p.link ? `
+              <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" title="Buka Link" class="inline-block p-1 text-stone-500 hover:text-stone-900 rounded">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </a>
+            ` : ''}
+            <button onclick="editProject('${p.id}')" title="Edit" class="p-1 text-stone-500 hover:text-stone-900 rounded">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function renderScriptVault() {
+      const container = document.getElementById("script-vault-list");
+      if (!container) return;
+      const scriptProjects = projects.filter(p => p.script && p.script.trim() !== "");
+      
+      container.innerHTML = "";
+
+      if (scriptProjects.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-6 text-center text-xs text-stone-400">
+            Belum ada script konsol tersimpan. Tambahkan script JS saat membuat atau mengedit project.
+          </div>
+        `;
+        return;
+      }
+
+      scriptProjects.forEach(p => {
+        const box = document.createElement("div");
+        box.className = "border border-stone-200 rounded-xl p-3.5 bg-stone-50/70 space-y-2 flex flex-col justify-between";
+        box.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between text-xs font-medium text-stone-800">
+              <span class="truncate">${escapeHtml(p.name)}</span>
+              <span class="text-[10px] text-stone-400 font-mono">${escapeHtml(p.workingVersion || 'Stable')}</span>
+            </div>
+            <p class="text-[11px] text-stone-500 line-clamp-1 mt-0.5">${escapeHtml(p.description || 'Automation helper')}</p>
+            <div class="mt-2 bg-stone-950 text-emerald-400 p-2.5 rounded-lg font-mono text-[10px] overflow-x-auto max-h-24 custom-scroll border border-stone-800">
+              <code>${escapeHtml(p.script)}</code>
+            </div>
+          </div>
+          <div class="pt-2 flex items-center justify-between text-[11px]">
+            <span class="text-stone-400 font-mono text-[10px] truncate max-w-[150px]">${escapeHtml(p.location || 'Local')}</span>
+            <button onclick="copySnippet('${p.id}')" class="inline-flex items-center space-x-1 text-stone-800 bg-white border border-stone-200 px-2 py-1 rounded shadow-2xs hover:bg-stone-50 font-medium transition">
+              <i data-lucide="copy" class="w-3 h-3 text-amber-600"></i>
+              <span>Copy JS</span>
+            </button>
+          </div>
+        `;
+        container.appendChild(box);
+      });
+      lucide.createIcons();
+    }
+
+    // ----------------------------------------------------
+    // PROJECT MODAL & IMAGE UPLOAD
+    // ----------------------------------------------------
+    function openProjectModal(isEdit = false) {
+      const modal = document.getElementById("modal-project");
+      const delBtn = document.getElementById("btn-delete-project");
+      modal.classList.remove("hidden");
+      if (!isEdit) {
+        document.getElementById("modal-project-title").innerText = "Project Baru";
+        document.getElementById("form-project-id").value = "";
+        document.getElementById("form-name").value = "";
+        document.getElementById("form-category").value = "work";
+        document.getElementById("form-description").value = "";
+        document.getElementById("form-working-version").value = "";
+        document.getElementById("form-location").value = "";
+        document.getElementById("form-link").value = "";
+        document.getElementById("form-status").value = "in_use";
+        document.getElementById("form-cover-url").value = "";
+        document.getElementById("form-cover-data").value = "";
+        document.getElementById("form-script").value = "";
+        document.getElementById("form-improvement-ideas").value = "";
+        document.getElementById("form-project-span").value = "1";
+        clearProjectCover();
+        setCoverMode('upload');
+        delBtn.classList.add("hidden");
+      } else {
+        delBtn.classList.remove("hidden");
+      }
+      lucide.createIcons();
+    }
+
+    function closeProjectModal() {
+      document.getElementById("modal-project").classList.add("hidden");
+    }
+
+    function editProject(id) {
+      const proj = projects.find(p => p.id === id);
+      if (!proj) return;
+      openProjectModal(true);
+      document.getElementById("modal-project-title").innerText = "Edit Project";
+      document.getElementById("form-project-id").value = proj.id;
+      document.getElementById("form-name").value = proj.name || "";
+      document.getElementById("form-category").value = proj.category || "work";
+      document.getElementById("form-description").value = proj.description || "";
+      document.getElementById("form-working-version").value = proj.workingVersion || "";
+      document.getElementById("form-location").value = proj.location || "";
+      document.getElementById("form-link").value = proj.link || "";
+      document.getElementById("form-status").value = proj.status || "in_use";
+      document.getElementById("form-script").value = proj.script || "";
+      document.getElementById("form-improvement-ideas").value = proj.improvementIdeas || "";
+      document.getElementById("form-project-span").value = proj.colSpan || 1;
+
+      if (proj.coverImage) {
+        document.getElementById("form-cover-data").value = proj.coverImage;
+        previewProjectCover(proj.coverImage);
+      } else {
+        clearProjectCover();
+      }
+    }
+
+    function setCoverMode(mode) {
+      const btnUpload = document.getElementById("btn-cover-mode-upload");
+      const btnUrl = document.getElementById("btn-cover-mode-url");
+      const secUpload = document.getElementById("section-cover-upload");
+      const secUrl = document.getElementById("section-cover-url");
+
+      if (mode === 'upload') {
+        btnUpload.className = "px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium";
+        btnUrl.className = "px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600";
+        secUpload.classList.remove("hidden");
+        secUrl.classList.add("hidden");
+      } else {
+        btnUrl.className = "px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium";
+        btnUpload.className = "px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600";
+        secUrl.classList.remove("hidden");
+        secUpload.classList.add("hidden");
+      }
+    }
+
+    function handleProjectImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      compressImage(file, 900, 0.75, (base64) => {
+        document.getElementById("form-cover-data").value = base64;
+        previewProjectCover(base64);
+      });
+    }
+
+    function previewProjectCover(src) {
+      if (!src) {
+        clearProjectCover();
+        return;
+      }
+      const box = document.getElementById("project-cover-preview-box");
+      const img = document.getElementById("project-cover-preview-img");
+      img.src = src;
+      box.classList.remove("hidden");
+      document.getElementById("form-cover-data").value = src;
+    }
+
+    function clearProjectCover() {
+      document.getElementById("project-cover-preview-box").classList.add("hidden");
+      document.getElementById("project-cover-preview-img").src = "";
+      document.getElementById("form-cover-data").value = "";
+      document.getElementById("form-cover-url").value = "";
+      const fileInput = document.getElementById("project-file-input");
+      if (fileInput) fileInput.value = "";
+    }
+
+    function saveProjectForm() {
+      const name = document.getElementById("form-name").value.trim();
+      if (!name) {
+        showToast("Nama project wajib diisi!");
+        return;
+      }
+
+      const id = document.getElementById("form-project-id").value || `proj-${Date.now()}`;
+      const isNew = !document.getElementById("form-project-id").value;
+      const colSpan = parseInt(document.getElementById("form-project-span").value) || 1;
+
+      const updatedProj = {
+        id: id,
+        name: name,
+        category: document.getElementById("form-category").value,
+        description: document.getElementById("form-description").value.trim(),
+        workingVersion: document.getElementById("form-working-version").value.trim(),
+        location: document.getElementById("form-location").value.trim(),
+        link: document.getElementById("form-link").value.trim(),
+        status: document.getElementById("form-status").value,
+        coverImage: document.getElementById("form-cover-data").value || "",
+        script: document.getElementById("form-script").value.trim(),
+        improvementIdeas: document.getElementById("form-improvement-ideas").value.trim(),
+        colSpan: colSpan
+      };
+
+      if (isNew) {
+        projects.unshift(updatedProj);
+        if (updatedProj.status === 'in_use') {
+          boardItemsOrder.unshift({ id: updatedProj.id, type: 'project' });
+        }
+      } else {
+        const idx = projects.findIndex(p => p.id === id);
+        if (idx !== -1) projects[idx] = updatedProj;
+      }
+
+      saveStorageData();
+      renderAll();
+      closeProjectModal();
+      showToast(isNew ? "Project baru tersimpan!" : "Project berhasil diperbarui!");
+    }
+
+    function deleteCurrentProject() {
+      const id = document.getElementById("form-project-id").value;
+      if (!id) return;
+      if (confirm("Hapus project ini dari registry?")) {
+        projects = projects.filter(p => p.id !== id);
+        boardItemsOrder = boardItemsOrder.filter(item => item.id !== id);
+        saveStorageData();
+        renderAll();
+        closeProjectModal();
+        showToast("Project telah dihapus.");
+      }
+    }
+
+    // ----------------------------------------------------
+    // WIDGET MODAL & IMAGE UPLOAD
+    // ----------------------------------------------------
+    function openWidgetModal(defaultType = 'photo') {
+      const modal = document.getElementById("modal-widget");
+      const delBtn = document.getElementById("btn-delete-widget");
+      modal.classList.remove("hidden");
+      delBtn.classList.add("hidden");
+      document.getElementById("form-widget-id").value = "";
+      document.getElementById("modal-widget-title").innerText = "Tambah Card Board";
+      setWidgetType(defaultType);
+      clearWidgetImage();
+      document.getElementById("form-widget-caption").value = "";
+      document.getElementById("form-widget-click-url").value = "";
+      document.getElementById("form-widget-text").value = "";
+      document.getElementById("form-widget-author").value = "";
+      document.getElementById("form-widget-col").value = defaultType === 'quote' ? "2" : "1";
+      setWidgetImageMode('upload');
+      lucide.createIcons();
+    }
+
+    function closeWidgetModal() {
+      document.getElementById("modal-widget").classList.add("hidden");
+    }
+
+    function setWidgetType(type) {
+      document.getElementById("form-widget-type").value = type;
+      const btnPhoto = document.getElementById("btn-type-photo");
+      const btnQuote = document.getElementById("btn-type-quote");
+      const photoFields = document.getElementById("widget-photo-fields");
+      const quoteFields = document.getElementById("widget-quote-fields");
+
+      if (type === 'photo') {
+        btnPhoto.className = "p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-800 bg-stone-50 font-medium text-stone-900";
+        btnQuote.className = "p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-200 hover:bg-stone-50 font-medium text-stone-600";
+        photoFields.classList.remove("hidden");
+        quoteFields.classList.add("hidden");
+      } else {
+        btnQuote.className = "p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-800 bg-stone-50 font-medium text-stone-900";
+        btnPhoto.className = "p-2 border rounded-xl flex items-center justify-center space-x-2 border-stone-200 hover:bg-stone-50 font-medium text-stone-600";
+        quoteFields.classList.remove("hidden");
+        photoFields.classList.add("hidden");
+      }
+      lucide.createIcons();
+    }
+
+    function setWidgetImageMode(mode) {
+      const btnUpload = document.getElementById("btn-widget-img-upload");
+      const btnUrl = document.getElementById("btn-widget-img-url");
+      const boxUpload = document.getElementById("widget-upload-box");
+      const boxUrl = document.getElementById("widget-url-box");
+
+      if (mode === 'upload') {
+        btnUpload.className = "px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium";
+        btnUrl.className = "px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600";
+        boxUpload.classList.remove("hidden");
+        boxUrl.classList.add("hidden");
+      } else {
+        btnUrl.className = "px-2.5 py-1 text-[11px] rounded border border-stone-800 bg-stone-800 text-white font-medium";
+        btnUpload.className = "px-2.5 py-1 text-[11px] rounded border border-stone-200 bg-stone-50 text-stone-600";
+        boxUrl.classList.remove("hidden");
+        boxUpload.classList.add("hidden");
+      }
+    }
+
+    function handleWidgetImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      compressImage(file, 1000, 0.78, (base64) => {
+        document.getElementById("form-widget-img-data").value = base64;
+        previewWidgetImage(base64);
+      });
+    }
+
+    function previewWidgetImage(src) {
+      if (!src) {
+        clearWidgetImage();
+        return;
+      }
+      const container = document.getElementById("widget-preview-container");
+      const img = document.getElementById("widget-preview-img");
+      img.src = src;
+      container.classList.remove("hidden");
+      document.getElementById("form-widget-img-data").value = src;
+    }
+
+    function clearWidgetImage() {
+      document.getElementById("widget-preview-container").classList.add("hidden");
+      document.getElementById("widget-preview-img").src = "";
+      document.getElementById("form-widget-img-data").value = "";
+      document.getElementById("form-widget-img-url").value = "";
+      const input = document.getElementById("widget-file-input");
+      if (input) input.value = "";
+    }
+
+    function editWidget(id) {
+      const w = widgets.find(x => x.id === id);
+      if (!w) return;
+      openWidgetModal(w.type);
+      document.getElementById("modal-widget-title").innerText = "Edit Widget Card";
+      document.getElementById("btn-delete-widget").classList.remove("hidden");
+      document.getElementById("form-widget-id").value = w.id;
+      document.getElementById("form-widget-col").value = w.colSpan || 1;
+
+      if (w.type === 'photo') {
+        previewWidgetImage(w.imageUrl);
+        document.getElementById("form-widget-caption").value = w.caption || "";
+        document.getElementById("form-widget-click-url").value = w.clickUrl || "";
+      } else {
+        document.getElementById("form-widget-text").value = w.text || "";
+        document.getElementById("form-widget-author").value = w.author || "";
+      }
+      lucide.createIcons();
+    }
+
+    function saveWidgetForm() {
+      const type = document.getElementById("form-widget-type").value;
+      const id = document.getElementById("form-widget-id").value || `widget-${Date.now()}`;
+      const isNew = !document.getElementById("form-widget-id").value;
+      const colSpan = parseInt(document.getElementById("form-widget-col").value) || 1;
+
+      let widgetObj = { id, type, colSpan };
+
+      if (type === 'photo') {
+        const imgData = document.getElementById("form-widget-img-data").value;
+        if (!imgData) {
+          showToast("Upload foto atau masukkan URL terlebih dahulu!");
+          return;
+        }
+        widgetObj.imageUrl = imgData;
+        widgetObj.caption = document.getElementById("form-widget-caption").value.trim();
+        widgetObj.clickUrl = document.getElementById("form-widget-click-url").value.trim();
+      } else {
+        const text = document.getElementById("form-widget-text").value.trim();
+        if (!text) {
+          showToast("Quote atau catatan tidak boleh kosong!");
+          return;
+        }
+        widgetObj.text = text;
+        widgetObj.author = document.getElementById("form-widget-author").value.trim();
+      }
+
+      if (isNew) {
+        widgets.push(widgetObj);
+        boardItemsOrder.push({ id: widgetObj.id, type: 'widget' });
+      } else {
+        const idx = widgets.findIndex(w => w.id === id);
+        if (idx !== -1) widgets[idx] = widgetObj;
+      }
+
+      saveStorageData();
+      renderAll();
+      closeWidgetModal();
+      showToast("Widget tersimpan ke board!");
+    }
+
+    function deleteCurrentWidget() {
+      const id = document.getElementById("form-widget-id").value;
+      if (!id) return;
+      if (confirm("Hapus widget ini dari board?")) {
+        widgets = widgets.filter(w => w.id !== id);
+        boardItemsOrder = boardItemsOrder.filter(item => item.id !== id);
+        saveStorageData();
+        renderAll();
+        closeWidgetModal();
+        showToast("Widget telah dihapus.");
+      }
+    }
+
+    // ----------------------------------------------------
+    // COMPRESSION HELPER (Canvas client-side)
+    // ----------------------------------------------------
+    function compressImage(file, maxDimension, quality, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDimension) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            }
+          } else {
+            if (height > maxDimension) {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const base64 = canvas.toDataURL("image/jpeg", quality);
+          callback(base64);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ----------------------------------------------------
+    // UTILITIES & BACKUP/RESTORE
+    // ----------------------------------------------------
+    function copySnippet(projId) {
+      const proj = projects.find(p => p.id === projId);
+      if (!proj || !proj.script) return;
+      
+      const ta = document.createElement("textarea");
+      ta.value = proj.script;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast("JS Console Script berhasil disalin ke clipboard!");
+      } catch (e) {
+        showToast("Gagal menyalin snippet.");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      const msg = document.getElementById("toast-message");
+      msg.innerText = message;
+      toast.classList.remove("translate-y-16", "opacity-0");
+      setTimeout(() => {
+        toast.classList.add("translate-y-16", "opacity-0");
+      }, 2400);
+    }
+
+    function toggleExportMenu() {
+      const menu = document.getElementById("export-dropdown");
+      menu.classList.toggle("hidden");
+    }
+
+    document.addEventListener("click", (e) => {
+      const menu = document.getElementById("export-dropdown");
+      const btn = menu?.previousElementSibling;
+      if (menu && !menu.contains(e.target) && !btn?.contains(e.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    function exportDataJSON() {
+      const data = {
+        version: "3.0-wide",
+        exportDate: new Date().toISOString(),
+        projects: projects,
+        widgets: widgets,
+        boardItemsOrder: boardItemsOrder
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `hubcraft-desktop-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toggleExportMenu();
+      showToast("Data backup berhasil diekspor.");
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.projects && Array.isArray(parsed.projects)) {
+            projects = parsed.projects;
+            widgets = parsed.widgets || [];
+            boardItemsOrder = parsed.boardItemsOrder || [];
+            saveStorageData();
+            renderAll();
+            showToast("Backup JSON berhasil diimport!");
+          } else {
+            showToast("Format JSON tidak valid.");
+          }
+        } catch (err) {
+          showToast("Gagal membaca file JSON.");
+        }
+      };
+      reader.readAsText(file);
+      toggleExportMenu();
+    }
+
+    function resetToSampleData() {
+      if (confirm("Reset kembali ke data default demo? Data saat ini akan diganti.")) {
+        projects = [...INITIAL_PROJECTS];
+        widgets = [...INITIAL_WIDGETS];
+        boardItemsOrder = [];
+        syncBoardOrder();
+        saveStorageData();
+        renderAll();
+        toggleExportMenu();
+        showToast("Data demo telah di-reset.");
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
